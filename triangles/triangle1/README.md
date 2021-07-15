@@ -21,12 +21,11 @@ import pyglet
 from pyglet import gl
 import ctypes
 import pyshaders
+
+window = pyglet.window.Window(width=600, height=600)
 ```
 I open up a pyglet window here, for some reason. Should probably do it later. By the way, if the program crashes later, you need to type `window.close()` at the command prompt.
 
-```python
-window = pyglet.window.Window(width=600, height=600)
-```
 The next part of the program defines the vertex shader and fragment shader. The `in vec4 position` is the vertex position which will be defined later. The `layout(location=0)` lets you connect it up easily to the rest of the program.
 
 The fragment shader just colours the triangle pink.
