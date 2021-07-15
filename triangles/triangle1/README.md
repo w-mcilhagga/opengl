@@ -102,7 +102,9 @@ gl.glBindBuffer(gl.GL_ARRAY_BUFFER, VBO) # makes the buffer currently active
 ```
 First, we create a handle to a buffer with `glGenBuffers` (analogous to `glGenVertexArrays`) which creates one (or more) buffer handles, and stores the handle value in `VBO`. Then we **bind** the buffer with the call `glBindBuffer`. Now, since `VAO` is the currently bound vertex array object, the vertex buffer gets added to the vertex array object. Thus, the object `VAO` now owns `VBO`. 
 
-Also, binding makes `VBO` the current vertex buffer, so all vertex-buffer-related calls use it as a target. The constant `GL_ARRAY_BUFFER` just means this buffer is for vertex attributes.
+Also, binding makes `VBO` the current vertex buffer, so all vertex-buffer-related calls use it as a target. The constant `GL_ARRAY_BUFFER` just means this buffer is for vertex attributes. 
+
+It's quite hard to keep track of all the implications about which objects are affected by which functions. Unless you're  an expert, which I'm not.
 
 The next step is to shove some vertices in the buffer:
 
@@ -119,7 +121,13 @@ Then, we call `glBufferData` to put the data in the currently active buffer (whi
 
 ## Plumbing.
 
-OK, how does opengl know that this data we just created is vertices? Well, we have to tell it. Right at the top, in the vertex shader, there was a line that said `layout(location = 0) in vec4 position;`. This value is then assigned to the special variable `gl_Position`, which **is** the vertex position. What we do is connect our buffer up to the inwards variable `position` in the fragment shader, so it gets assigned to the vertex position `gl_Position`. Here's the incantations to do that:
+OK, how does opengl know that this data we just created is vertices? We have to tell it. Right at the top, in the vertex shader, there was a line that said 
+```
+layout(location = 0) in vec4 position;
+```
+This value was then assigned to the special variable `gl_Position`, which **is** the vertex position as far as open gl is concerned. What we have to do is connect our buffer up to the shader variable `position` in the fragment shader, so it then gets assigned to the vertex position `gl_Position`. 
+
+Here's the incantations to do that:
 
 ```python
 # connect the buffer to location=0
@@ -127,8 +135,11 @@ OK, how does opengl know that this data we just created is vertices? Well, we ha
 gl.glEnableVertexAttribArray(0) # like pyshaders.attr.enable()
 gl.glVertexAttribPointer(0, len(VERTEX()), gl.GL_FLOAT, False, ctypes.sizeof(VERTEX), 0)
 ```
-The first call `glEnableVertexAttribArray` enables the variable in location 0. No idea why it isn't already enabled, but there you go. The next call `glVertexAttribPointer` connects our buffer `VBO` (which, remember, is still the active buffer) to the `position` variable, and tells opengl how to break up the contents of the buffer into vertices. 
-* `0` is the location of the variable `position` tbhat we're plumbing up
+The first call `glEnableVertexAttribArray` enables the variable in location 0. No idea why it isn't already enabled, but there you go. 
+
+The next call `glVertexAttribPointer` connects our buffer `VBO` (which, remember, is *still* the active buffer) to the `position` variable, and tells opengl how to break up the contents of the buffer into vertices. The parameters to the call are:
+
+* `0` is the location in the shader of the variable `position` that we're plumbing to our vertex buffer
 * `len(VERTEX())` is the number of components in a vertex (NB `VERTEX` is a class, so `VERTEX()` instantiates one just to get the length), which is 3.
 * `GL_FLOAT` is the size of each number in the buffer
 * `False` is a flag saying whether the coordinates need to be normalized (no, in this case).
@@ -140,6 +151,7 @@ One last thing, we unbind the vertex array object:
 ```python
 gl.glBindVertexArray(0) # unbinds the VAO we were using
 ```
+Not sure if I need to unbind the VBO. Probably, but this program is simple enough that I can get away with a few loose ends.
 
 ## Drawing.
 
