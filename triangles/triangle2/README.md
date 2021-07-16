@@ -179,7 +179,7 @@ Now to do the same for the color buffer:
 colors = VAO.createBuffer(data=((1,0,0),(0,1,0), (0,0,1)))
 colors.connectToShader(location=1)
 ```
-The data from this buffer will be fed into location `, so it will become the colours. The first vertex will be red `(1,0,0)`, the next green `(0,1,0)` and the last blue `(0,0,1)`. These are floating point colours rather than 8 bit.
+The data from this buffer will be fed into location `1`, so it will become the colours. The first vertex will be red `(1,0,0)`, the next green `(0,1,0)` and the last blue `(0,0,1)`. These are floating point colours rather than 8 bit.
 
 Let's finally run the program:
 ```python
@@ -189,11 +189,20 @@ Let's finally run the program:
 def on_draw():
     gl.glClearColor(0.5, 0.6, 0.7, 1.0)
     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-    VAO.drawArrays(count=3)
+    VAO.drawArrays()
 
 gl.glEnable(gl.GL_MULTISAMPLE) # antialiasing
 gl.glEnable(gl.GL_DEPTH_TEST) # 3d
 pyglet.app.run()
 ```
 
+The call `VAO.drawArrays()` makes the vertex array object active, and pumps all the buffer data off to Open GL, which feeds it to the vertex shader. 
+
+If all goes well, you should get this:
+
+![a multicoloured triangle](triangle2.png)
+
+## Without `cauldron`
+
+If you want to see what the code would look like without using cauldron, have a look at `triangle2_with_boilerplate.py`
 
