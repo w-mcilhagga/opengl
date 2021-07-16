@@ -11,6 +11,7 @@ import pyglet
 from pyglet import gl
 import ctypes
 import pyshaders
+from cauldron import VertexArrayObject
 
 window = pyglet.window.Window(width=600, height=600)
 
@@ -54,51 +55,13 @@ program = setup_program()
 
 # VERTICES
 
-VAO = gl.GLuint(0)
-VBO = gl.GLuint(0)
-CBO = gl.GLuint(0)
-
-# create the VAO
-
-gl.glGenVertexArrays(1, ctypes.byref(VAO)) 
-gl.glBindVertexArray(VAO) # makes the handle currently active
-
-# create vertex buffer for a triangle
-
-VERTEX = gl.GLfloat*3
-
-gl.glGenBuffers(1, ctypes.byref(VBO)) # creates a handle to a VBO object
-gl.glBindBuffer(gl.GL_ARRAY_BUFFER, VBO) # makes the buffer currently active
-
-# make data and put in buffer
-
-data = (VERTEX * 3)((-0.6, -0.5, 0.1),(0.6, -0.5, 0.1), (0.0, 0.5, 0.1))
-gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(data), data, gl.GL_DYNAMIC_DRAW)
-
-# connect the buffer to location=0
-
-gl.glEnableVertexAttribArray(0) # like pyshaders.attr.enable()
-gl.glVertexAttribPointer(0, len(VERTEX()), gl.GL_FLOAT, False, ctypes.sizeof(VERTEX), 0)
-
-# create the vertex colors for the triangle
-
-COLOUR = gl.GLfloat*3;
-
-gl.glGenBuffers(1, ctypes.byref(CBO)) # creates a handle to a VBO object
-gl.glBindBuffer(gl.GL_ARRAY_BUFFER, CBO) # makes the buffer currently active
-
-# make data and put in buffer
-
-colors = (COLOUR * 3)((1,0,0),(0,1,0), (0,0,1))
-gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(colors), colors, gl.GL_DYNAMIC_DRAW)
-
-# connect the buffer to location=1
-
-gl.glEnableVertexAttribArray(1) # like pyshaders.attr.enable()
-gl.glVertexAttribPointer(1, len(COLOUR()), gl.GL_FLOAT, False, ctypes.sizeof(COLOUR), 0)
-
-
-gl.glBindVertexArray(0) # unbinds the VAO we were using
+VAO = VertexArrayObject()
+# vertices
+vertices = VAO.createBuffer(data=((-0.6, -0.5, 0.1), (0.6, -0.5, 0.1), (0.0, 0.5, 0.1)))
+vertices.connectToShader(location=0)
+# colors
+colors = VAO.createBuffer(data=((1,0,0),(0,1,0), (0,0,1)))
+colors.connectToShader(location=1)
 
 # RUN 
 
@@ -106,9 +69,8 @@ gl.glBindVertexArray(0) # unbinds the VAO we were using
 def on_draw():
     gl.glClearColor(0.5, 0.6, 0.7, 1.0)
     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-    gl.glBindVertexArray(VAO)
-    gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(data))
-    gl.glBindVertexArray(0)
+    VAO.drawArrays()
 
+gl.glEnable(gl.GL_MULTISAMPLE) # antialiasing
 gl.glEnable(gl.GL_DEPTH_TEST) # 3d
 pyglet.app.run()
