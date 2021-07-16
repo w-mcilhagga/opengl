@@ -2,11 +2,11 @@
 
 This one is just playing around, in the "oh, you can do that too" mode.
 
-It initially shows two triangles, one behind the other (so you can't see the second). If you click the mouse, the front triangles moves to where the mouse is. Demonstrates:
-* haveing two vertex array buffers, one for each object
+It initially shows two triangles, one behind the other (so you can't see the second). If you click the mouse, the front triangle moves to where the mouse is. Demonstrates:
+* having two vertex array buffers, one for each object
 * changing the data in a  vertex buffer.
 
-Most of the code is the same as `triangle2.py`, with the following xhanges:
+Most of the code is the same as `triangle2.py`, with the following changes:
 
 ```python
 # TRIANGLE1
