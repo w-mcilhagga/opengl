@@ -170,7 +170,7 @@ VAO = VertexArrayObject()
 vertices = VAO.createBuffer(data=((-0.6, -0.5, 0.1), (0.6, -0.5, 0.1), (0.0, 0.5, 0.1)))
 vertices.connectToShader(location=0)
 ```
-Yup, that's it. I've created the vertex array object, attached a vertex buffer to it, and filled it with data. The `connectToShader` also ensures that the data from this buffer is fed into the vertex shader at location 0. 
+Yup, that's it. I've created the vertex array object, attached a vertex buffer to it, and filled it with data. The `connectToShader` also ensures that the data from this buffer is fed into the vertex shader at location 0. If ypou didn't specify the location in the fragment shader, you'd have to use `location=program.attributes.position.loc` instead.
 
 Now to do the same for the color buffer:
 
