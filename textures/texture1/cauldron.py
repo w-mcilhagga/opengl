@@ -68,10 +68,9 @@ class _VertexBufferObject:
     def setData(self, data, target=None, usage=None):
         # puts the data in the buffer
         if type(data) in (list, tuple):
-            data, size = py2ctypes(data)
+            data, self.size = py2ctypes(data)
         if type(data) is np.ndarray:
-            data, size = numpy2ctypes(data)
-        self.size = size
+            data, self.size = numpy2ctypes(data)
         self.n = len(data)
         target = target or self.target
         usage = usage or self.usage
@@ -87,6 +86,8 @@ class _VertexBufferObject:
                 gl.glEnableVertexAttribArray(location)
                 gl.glVertexAttribPointer(location, self.size, gl.GL_FLOAT, normalized, 0, 0)
 
+
+
 # conversion routines to change lists, np arrays to the appropriate ctypes
 # data for vertex buffers.
     
@@ -96,11 +97,11 @@ def py2ctypes(data):
     n = len(data)
     elemsize = 1
     if type(data[0]) in (list, tuple):
+        elemsize = len(data[0])
         if type(data) is list:
             # ctypes objects accept tuples but not lists,
             # so have to change it.
             data = tuple(tuple(item) for item in data)
-        elemsize = len(data[0])
     if elemsize==1:
         data = (gl.GLfloat*n)(*data)
     else:
@@ -111,17 +112,17 @@ def py2ctypes(data):
 def numpy2ctypes(data):
     # converts a numpy array of floats to a ctypes array
     # of GLfloat.
-    # first, work out size of glfloat & corresponding numpy format
+    # 1. work out size of glfloat & corresponding numpy format
     bytes = ctypes.sizeof(gl.GLfloat)
     glfmt = np.dtype(f'f{bytes}')
-    # check type of data and convert to glfmt as needed
+    # 2. check type of data and convert to glfmt as needed
     if data.dtype!=glfmt:
         data = data.astype(glfmt)
-    # work out the elemsize
+    # 3. work out the elemsize
     elemsize = 1
     if data.ndim>1:
         elemsize = len(data[0])
-    # convert the data & return
+    # 4. convert the data & return
     data = ctlib.as_ctypes(data)
     return data, elemsize
 

@@ -33,7 +33,7 @@ colors.connectToShader(location=1)
 
 This part of the code creates two vertex array objects, one for each triangle. The first triangle has a z-coordinate of 0.5, which is further away than the second triangle. (Note: to get the depths working properly, you need to call `gl.glEnable(gl.GL_DEPTH_TEST)`, which is done in this file just before running the pyglet event loop.
 
-The variables `vertices` and `colors` are re-used here.
+The variables `vertices` and `colors` are re-used here. Notice that we connect to the same in variables in the shader. 
 
 The code also adds a mouse  press event to the window:
 ```python

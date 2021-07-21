@@ -11,11 +11,12 @@ opengl area is -1...1 x and y, 0..1 z
 
 import pyglet
 from pyglet import gl
-import ctypes
 import pyshaders
 from cauldron import VertexArrayObject
 
-window = pyglet.window.Window(width=600, height=600)
+# antialiasing needs the right multisampling context.
+config = pyglet.gl.Config(sample_buffers=1, samples=4)
+window = pyglet.window.Window(width=600, height=600, config=config)
 
 # SHADERS - color and location
 
@@ -92,6 +93,5 @@ def on_mouse_press(x,y,*args):
     dy = (y-300)/300.0
     vertices.setData(((-0.6+dx, -0.5+dy, 0.1),(0.6+dx, -0.5+dy, 0.1), (0.0+dx, 0.5+dy, 0.1)))
 
-    
 gl.glEnable(gl.GL_DEPTH_TEST) # 3d
 pyglet.app.run()

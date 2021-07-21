@@ -9,7 +9,8 @@ a library to help with Open GL incantations with vertex objects and buffers.
 
 import pyglet.gl as gl
 import ctypes
-import numpy
+import numpy as np
+import numpy.ctypeslib as ctlib
         
 
 class VertexArrayObject:
@@ -37,9 +38,8 @@ class VertexArrayObject:
         return buffer
     
     def drawArrays(self, mode=gl.GL_TRIANGLE_STRIP, first=0, count=None):
-        # count comes from the buffers
         if count is None:
-            count = self.buffers[0].size
+            count = self.buffers[0].n
         with self:
             gl.glDrawArrays(mode, first, count)
             
@@ -68,10 +68,11 @@ class _VertexBufferObject:
     def setData(self, data, target=None, usage=None):
         # puts the data in the buffer
         if type(data) in (list, tuple):
-            data, size = _VertexBufferObject.py2ctypes(data)
-        if type(data) is numpy.ndarray:
-            data, size = _VertexBufferObject.numpy2ctypes(data)
+            data, size = py2ctypes(data)
+        if type(data) is np.ndarray:
+            data, size = numpy2ctypes(data)
         self.size = size
+        self.n = len(data)
         target = target or self.target
         usage = usage or self.usage
         with self:
@@ -85,32 +86,43 @@ class _VertexBufferObject:
             with self:
                 gl.glEnableVertexAttribArray(location)
                 gl.glVertexAttribPointer(location, self.size, gl.GL_FLOAT, normalized, 0, 0)
+
+# conversion routines to change lists, np arrays to the appropriate ctypes
+# data for vertex buffers.
     
-    @staticmethod
-    def py2ctypes(data):
-        # converts a list (or list of lists) to a ctypes array of arrays,
-        # specifically for vertex data
-        n = len(data)
-        elemsize = 1
-        if type(data[0]) in (list, tuple):
-            if type(data) is list:
-                # ctypes objects accept tuples but not lists,
-                # so have to change it.
-                data = tuple(tuple(item) for item in data)
-            elemsize = len(data[0])
-        if elemsize==1:
-            data = (gl.GLfloat*n)(*data)
-        else:
-            elem = gl.GLfloat*3
-            data = (elem*n)(*data)
-        return data, elemsize
-    
-    @staticmethod
-    def numpy2ctypes(data):
-        # converts a numpy array of floats to a ctypes array
-        n = len(data)
-        elemsize = 1
-        if data.dims>1:
-            elemsize = len(data[0])
-        # not sure what to do next.
+def py2ctypes(data):
+    # converts a list (or list of lists) to a ctypes array of arrays,
+    # specifically for vertex data
+    n = len(data)
+    elemsize = 1
+    if type(data[0]) in (list, tuple):
+        if type(data) is list:
+            # ctypes objects accept tuples but not lists,
+            # so have to change it.
+            data = tuple(tuple(item) for item in data)
+        elemsize = len(data[0])
+    if elemsize==1:
+        data = (gl.GLfloat*n)(*data)
+    else:
+        elem = gl.GLfloat*elemsize
+        data = (elem*n)(*data)
+    return data, elemsize
+
+def numpy2ctypes(data):
+    # converts a numpy array of floats to a ctypes array
+    # of GLfloat.
+    # first, work out size of glfloat & corresponding numpy format
+    bytes = ctypes.sizeof(gl.GLfloat)
+    glfmt = np.dtype(f'f{bytes}')
+    # check type of data and convert to glfmt as needed
+    if data.dtype!=glfmt:
+        data = data.astype(glfmt)
+    # work out the elemsize
+    elemsize = 1
+    if data.ndim>1:
+        elemsize = len(data[0])
+    # convert the data & return
+    data = ctlib.as_ctypes(data)
+    return data, elemsize
+
         

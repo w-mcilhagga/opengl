@@ -9,7 +9,6 @@ Drawing a triangle in opengl with vertex attribute (colour)
 
 import pyglet
 from pyglet import gl
-import ctypes
 import pyshaders
 from cauldron import VertexArrayObject
 
